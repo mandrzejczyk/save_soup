@@ -27,6 +27,8 @@ public class SaveSoupApp {
     private static WebDriver driver;
     private static boolean isFinished = false;
     private static String lastPagePath;
+    private static boolean saveDescription;
+    private static String currentPageAdress;
 
     public static void main(String[] args) {
 
@@ -36,8 +38,9 @@ public class SaveSoupApp {
             fileNumber = args[2];
             downloadImages = Boolean.parseBoolean(args[3]);
             downloadVideos = Boolean.parseBoolean(args[4]);
+            saveDescription = Boolean.parseBoolean(args[5]);
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Please set all 5 parameters.");
+            System.out.println("Please set all 6 parameters.");
             throw new RuntimeException(e);
         }
 
@@ -85,7 +88,7 @@ public class SaveSoupApp {
         boolean isLoaded = false;
         int retry = 0;
         while (!isLoaded) {
-            if(retry==5){
+            if (retry == 5) {
                 System.out.println(driver.getCurrentUrl());
                 System.out.println(driver.getTitle());
                 System.out.println(driver.getPageSource());
@@ -107,6 +110,7 @@ public class SaveSoupApp {
                     System.out.println(String.format("Retrying to load page %s", pageAddress));
                 } catch (NoSuchElementException e2) {
                     isLoaded = true;
+                    currentPageAdress = pageAddress;
                     lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
                     Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
                     driver.findElement(By.cssSelector("#avatarcontainer"));
@@ -119,13 +123,13 @@ public class SaveSoupApp {
 
     private static void loadNextPage() throws IOException, InterruptedException {
         try {
-                String nextPageSuffix = driver.findElement(By.cssSelector(".endlessnotice a[onclick='SOUP.Endless.getMoreBelow(); return false;']")).getAttribute("href");
-                loadPage(nextPageSuffix);
+            String nextPage = driver.findElement(By.cssSelector(".endlessnotice a[onclick='SOUP.Endless.getMoreBelow(); return false;']")).getAttribute("href");
+            loadPage(nextPage);
         } catch (NoSuchElementException ex) {
-            System.out.println(String.format("Finished downloading. Last loaded page was %s", lastPagePath));
             System.out.println(driver.getCurrentUrl());
-            System.out.println(driver.getTitle());
+
             System.out.println(driver.getPageSource());
+            System.out.println(String.format("Finished downloading. Last loaded page was %s", currentPageAdress));
             isFinished = true;
         }
     }
@@ -135,17 +139,19 @@ public class SaveSoupApp {
         if (!file.exists()) file.mkdir();
     }
 
-    private static boolean downloadImage(WebElement element) {
+    private static boolean downloadImage(WebElement element) throws IOException {
         if (downloadImages) {
             try {
                 String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer .lightbox")).getAttribute("href");
                 downloadFile(downloadPath);
+                saveDescription(element);
                 return true;
             } catch (NoSuchElementException ignored) {
             }
             try {
                 String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer img")).getAttribute("src");
                 downloadFile(downloadPath);
+                saveDescription(element);
                 return true;
             } catch (NoSuchElementException ignored) {
             }
@@ -153,12 +159,23 @@ public class SaveSoupApp {
         return false;
     }
 
-    private static void downloadVideo(WebElement element) {
+    private static void downloadVideo(WebElement element) throws IOException {
         if (downloadVideos) {
             try {
                 String downloadPath = element.findElement(By.cssSelector(".content video")).getAttribute("src");
                 downloadFile(downloadPath);
+                saveDescription(element);
             } catch (NoSuchElementException ignored) {
+            }
+        }
+    }
+
+    private static void saveDescription(WebElement element) throws IOException {
+        if (saveDescription) {
+            try {
+                WebElement description = element.findElement(By.cssSelector(".description"));
+                Files.write(Paths.get(String.format("%s\\%s.txt", downloadFolder, fileNumber)), description.getText().getBytes());
+            } catch (NoSuchElementException ignore) {
             }
         }
     }

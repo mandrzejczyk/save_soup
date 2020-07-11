@@ -27,6 +27,7 @@ java -jar save_soup.jar https://angusiasty.soup.io download 000000000 true false
 | ```First file name``` | use ```000000000``` as default |
 | ```Download images``` | ```true``` / ```false``` |
 | ```Download videos``` | ```true``` / ```false``` |
+| ```Download post text``` | ```true``` / ```false``` |
 
 # In case of an error:
   It's possible to resume your download!
