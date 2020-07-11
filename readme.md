@@ -18,7 +18,7 @@ cd C:\save_soup
 ```
   - Start the jar file with parameters
 ```sh
-java -jar save_soup.jar https://angusiasty.soup.io download 000000000 true false
+java -jar save_soup.jar https://angusiasty.soup.io download 000000000 true false false
 ```
 | Parameter | Accepted values |
 | ------ | ------ |
