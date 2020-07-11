@@ -11,13 +11,13 @@ To run the app you will need:
 
 # To run prebuild app:
 
-  - [download app jar](https://drive.google.com/file/d/1HOOObq38P6pkItfo4UpipckladPpNuMa/view?usp=sharing)
-  - open command prompt (press windows button and type cmd)
-  - go to jar file directory (I saved my jar file at 'C:\save_soup')
+  - [Download app jar](https://drive.google.com/file/d/1HOOObq38P6pkItfo4UpipckladPpNuMa/view?usp=sharing) (or build it yourself 😉)
+  - Open command prompt (press windows button and type cmd)
+  - Go to jar file directory (I saved my jar file at 'C:\save_soup')
 ```sh
 cd C:\save_soup
 ```
-  - start the jar file with parameters
+  - Start the jar file with parameters
 ```sh
 java -jar save_soup.jar https://angusiasty.soup.io download 000000000 true false
 ```
