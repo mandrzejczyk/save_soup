@@ -6,6 +6,7 @@ To run the app you will need:
   - [Java 1.8+](https://www.java.com/en/download/)
   - [Google Chrome version 83](https://www.google.com/chrome/) - current version (11.07.2020)
   - Soup.io blog with endless scrolling disabled
+  
   ![N|Solid](https://i.imgur.com/Oqyi3rW.png)
 
 # To run prebuild app:
