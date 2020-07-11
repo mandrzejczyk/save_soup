@@ -30,8 +30,11 @@ java -jar save_soup.jar https://angusiasty.soup.io download 000000000 true false
 
 # In case of an error:
   It's possible to resume your download!
+  
   Go to your download folder and open ```lastPage.txt``` file.
+  
   Inside you will find a link to last visited page.
+  
   Start the app like before, but:
   - change ```Soup path``` to path from ```lastPage.txt```
   - change ```First file name``` to number of your last downloaded file

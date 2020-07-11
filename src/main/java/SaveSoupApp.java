@@ -81,24 +81,43 @@ public class SaveSoupApp {
         driver = new ChromeDriver(caps);
     }
 
-    private static void loadPage(String pageAddress) throws IOException {
+    private static void loadPage(String pageAddress) throws IOException, InterruptedException {
         boolean isLoaded = false;
+        int retry = 0;
         while (!isLoaded) {
+            if(retry==5){
+                System.out.println(driver.getCurrentUrl());
+                System.out.println(driver.getTitle());
+                System.out.println(driver.getPageSource());
+                throw new RuntimeException(String.format("Failed to load page %s after 5 attempts", pageAddress));
+            }
             driver.get(pageAddress);
             try {
-                driver.findElement(By.xpath("//div[@Class='body'][.='503 – Hang on a second']"));
+                driver.findElement(By.xpath("//*[.='503 – Hang on a second']"));
+                System.out.println("Error 503");
+                System.out.println("Waiting for 20s");
+                Thread.sleep(20000);
                 System.out.println(String.format("Retrying to load page %s", pageAddress));
-            } catch (NoSuchElementException e) {
-                isLoaded = true;
-                lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
-                Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
-                driver.findElement(By.cssSelector("#avatarcontainer"));
-                System.out.println(String.format("Loaded %s", pageAddress));
+            } catch (NoSuchElementException e1) {
+                try {
+                    driver.findElement(By.xpath("//*[.='429 Too Many Requests']"));
+                    System.out.println("Error 429");
+                    System.out.println("Waiting for 20s");
+                    Thread.sleep(20000);
+                    System.out.println(String.format("Retrying to load page %s", pageAddress));
+                } catch (NoSuchElementException e2) {
+                    isLoaded = true;
+                    lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
+                    Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
+                    driver.findElement(By.cssSelector("#avatarcontainer"));
+                    System.out.println(String.format("Loaded %s", pageAddress));
+                }
             }
+            retry++;
         }
     }
 
-    private static void loadNextPage() throws IOException {
+    private static void loadNextPage() throws IOException, InterruptedException {
         try {
                 String nextPageSuffix = driver.findElement(By.cssSelector(".endlessnotice a[onclick='SOUP.Endless.getMoreBelow(); return false;']")).getAttribute("href");
                 loadPage(nextPageSuffix);
@@ -119,13 +138,13 @@ public class SaveSoupApp {
     private static boolean downloadImage(WebElement element) {
         if (downloadImages) {
             try {
-                String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer img")).getAttribute("src");
+                String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer .lightbox")).getAttribute("href");
                 downloadFile(downloadPath);
                 return true;
             } catch (NoSuchElementException ignored) {
             }
             try {
-                String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer .lightbox")).getAttribute("href");
+                String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer img")).getAttribute("src");
                 downloadFile(downloadPath);
                 return true;
             } catch (NoSuchElementException ignored) {
