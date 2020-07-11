@@ -30,11 +30,16 @@ public class SaveSoupApp {
 
     public static void main(String[] args) {
 
-        soupPath = args[0];
-        downloadFolder = String.format("%s\\%s", System.getProperty("user.dir"), args[1]);
-        fileNumber = args[2];
-        downloadImages = Boolean.parseBoolean(args[3]);
-        downloadVideos = Boolean.parseBoolean(args[4]);
+        try {
+            soupPath = args[0];
+            downloadFolder = String.format("%s\\%s", System.getProperty("user.dir"), args[1]);
+            fileNumber = args[2];
+            downloadImages = Boolean.parseBoolean(args[3]);
+            downloadVideos = Boolean.parseBoolean(args[4]);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Please set all 5 parameters.");
+            throw new RuntimeException(e);
+        }
 
         if (!downloadImages && !downloadVideos) isFinished = true;
 
@@ -95,9 +100,13 @@ public class SaveSoupApp {
 
     private static void loadNextPage() throws IOException {
         try {
-            String nextPage = driver.findElement(By.cssSelector(".pagination.paginationbottom .more.keephash")).getAttribute("href");
-            loadPage(nextPage);
-        } catch (NoSuchElementException e) {
+                String nextPageSuffix = driver.findElement(By.cssSelector(".endlessnotice a[onclick='SOUP.Endless.getMoreBelow(); return false;']")).getAttribute("href");
+                loadPage(nextPageSuffix);
+        } catch (NoSuchElementException ex) {
+            System.out.println(String.format("Finished downloading. Last loaded page was %s", lastPagePath));
+            System.out.println(driver.getCurrentUrl());
+            System.out.println(driver.getTitle());
+            System.out.println(driver.getPageSource());
             isFinished = true;
         }
     }
@@ -159,7 +168,7 @@ public class SaveSoupApp {
     public static class ResourceExtractor {
         public String getByName(String name) throws IOException {
             URL inputUrl = getClass().getResource("/" + name);
-            File dest = new File(String.format("%s\\%s",System.getProperty("user.dir"),name));
+            File dest = new File(String.format("%s\\%s", System.getProperty("user.dir"), name));
             if (!dest.exists()) FileUtils.copyURLToFile(inputUrl, dest);
             return dest.getAbsolutePath();
         }
