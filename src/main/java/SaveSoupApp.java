@@ -6,6 +6,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,43 +91,75 @@ public class SaveSoupApp {
     private static void loadPage(String pageAddress) throws IOException, InterruptedException {
         boolean isLoaded = false;
         int retry = 0;
+        currentPageAddress = pageAddress;
+        saveCurrentPageAddress(pageAddress);
         while (!isLoaded) {
+            driver.get(pageAddress);
+            try {
+                checkError503Page(pageAddress);
+            } catch (NoSuchElementException e1) {
+                try {
+                    checkError429Page(pageAddress);
+                } catch (NoSuchElementException e2) {
+                    try {
+                        checkSoupPage(pageAddress);
+                        isLoaded = true;
+                    } catch (NoSuchElementException ignore) {
+                        checkNSWFsoup();
+                    }
+                }
+            }
+            retry++;
             if (retry == 5) {
                 System.out.println(driver.getCurrentUrl());
                 System.out.println(driver.getTitle());
                 System.out.println(driver.getPageSource());
                 throw new RuntimeException(String.format("Failed to load page %s after 5 attempts", pageAddress));
             }
-            driver.get(pageAddress);
-            try {
-                driver.findElement(By.xpath("//*[.='503 – Hang on a second']"));
-                System.out.println("Error 503");
-                System.out.println("Waiting for 20s");
-                Thread.sleep(20000);
-                System.out.println(String.format("Retrying to load page %s", pageAddress));
-            } catch (NoSuchElementException e1) {
-                try {
-                    driver.findElement(By.xpath("//*[.='429 Too Many Requests']"));
-                    System.out.println("Error 429");
-                    System.out.println("Waiting for 20s");
-                    Thread.sleep(20000);
-                    System.out.println(String.format("Retrying to load page %s", pageAddress));
-                } catch (NoSuchElementException e2) {
-                    isLoaded = true;
-                    currentPageAddress = pageAddress;
-                    lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
-                    Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
-                    driver.findElement(By.cssSelector("#avatarcontainer"));
-                    System.out.println(String.format("Loaded %s", pageAddress));
-                }
-            }
-            retry++;
         }
+    }
+
+    private static void saveCurrentPageAddress(String pageAddress) throws IOException {
+        lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
+        Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
+    }
+
+    private static void checkError503Page(String pageAddress) throws InterruptedException {
+        driver.findElement(By.xpath("//*[.='503 – Hang on a second']"));
+        System.out.println("Error 503");
+        System.out.println("Waiting for 20s");
+        Thread.sleep(20000);
+        System.out.println(String.format("Retrying to load page %s", pageAddress));
+    }
+
+    private static void checkError429Page(String pageAddress) throws InterruptedException {
+        driver.findElement(By.xpath("//*[.='429 Too Many Requests']"));
+        System.out.println("Error 429");
+        System.out.println("Waiting for 20s");
+        Thread.sleep(20000);
+        System.out.println(String.format("Retrying to load page %s", pageAddress));
+    }
+
+    private static void checkSoupPage(String pageAddress) {
+        driver.findElement(By.cssSelector("#avatarcontainer"));
+        System.out.println(String.format("Loaded %s", pageAddress));
+    }
+
+    private static void checkNSWFsoup() {
+        WebElement nsfwButton = driver.findElement(By.cssSelector(".warning"))
+                .findElement(By.cssSelector("input"));
+        System.out.println("Landed on NSFW soup. Proceeding.");
+        nsfwButton.submit();
+        new WebDriverWait(driver, 60)
+                .until(ExpectedConditions.visibilityOfElementLocated(
+                        By.cssSelector(".post")));
     }
 
     private static void loadNextPage() throws IOException, InterruptedException {
         try {
-            String nextPage = driver.findElement(By.cssSelector(".endlessnotice a[onclick='SOUP.Endless.getMoreBelow(); return false;']")).getAttribute("href");
+            String nextPage = driver.findElement(
+                    By.cssSelector(".endlessnotice a[onclick='SOUP.Endless.getMoreBelow(); return false;']"))
+                    .getAttribute("href");
             loadPage(nextPage);
         } catch (NoSuchElementException ex) {
             System.out.println(driver.getCurrentUrl());
@@ -143,7 +177,9 @@ public class SaveSoupApp {
     private static boolean downloadImage(WebElement element) throws IOException {
         if (downloadImages) {
             try {
-                String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer .lightbox")).getAttribute("href");
+                String downloadPath = element.findElement(
+                        By.cssSelector(".content .imagecontainer .lightbox"))
+                        .getAttribute("href");
                 downloadPath = downloadPath.replaceAll("_\\d{3}\\.", ".");
                 downloadFile(downloadPath);
                 saveDescription(element);
@@ -151,7 +187,9 @@ public class SaveSoupApp {
             } catch (NoSuchElementException ignored) {
             }
             try {
-                String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer img")).getAttribute("src");
+                String downloadPath = element.findElement(
+                        By.cssSelector(".content .imagecontainer img"))
+                        .getAttribute("src");
                 downloadPath = downloadPath.replaceAll("_\\d{3}\\.", ".");
                 downloadFile(downloadPath);
                 saveDescription(element);
@@ -177,7 +215,9 @@ public class SaveSoupApp {
         if (saveDescription) {
             try {
                 WebElement description = element.findElement(By.cssSelector(".description"));
-                Files.write(Paths.get(String.format("%s\\%s.txt", downloadFolder, fileNumber)), description.getText().getBytes());
+                Files.write(
+                        Paths.get(String.format("%s\\%s.txt", downloadFolder, fileNumber)),
+                        description.getText().getBytes());
             } catch (NoSuchElementException ignore) {
             }
         }

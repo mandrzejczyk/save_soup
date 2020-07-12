@@ -2,13 +2,13 @@
 
 Save Soup is Windows console app for saving soup.io content.
 
-#### Now supports endless scrolling 😎
+#### Now supports NSFW soups 😎
 
 To run the app you will need:
   - [Java 1.8+](https://www.java.com/en/download/)
   - [Google Chrome version 83](https://www.google.com/chrome/) - current version (11.07.2020)
 
-# To run prebuild app:
+# To run the app:
 
   - [Download app jar](https://drive.google.com/file/d/1HOOObq38P6pkItfo4UpipckladPpNuMa/view?usp=sharing) (or build it yourself 😉)
   - Open command prompt (press windows button and type cmd)
