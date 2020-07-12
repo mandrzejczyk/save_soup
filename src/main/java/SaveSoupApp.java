@@ -28,12 +28,16 @@ public class SaveSoupApp {
     private static boolean isFinished = false;
     private static String lastPagePath;
     private static boolean saveDescription;
-    private static String currentPageAdress;
+    private static String currentPageAddress;
 
     public static void main(String[] args) {
         System.out.println(String.format("OPERATION SAVE %s IN PROGRESS!", soupPath));
         setArguments(args);
-        if (!downloadImages && !downloadVideos) isFinished = true;
+        if (!downloadImages && !downloadVideos) {
+            System.out.println("Nothing to download.");
+            System.out.println("Set at least one content type download to true.");
+            return;
+        }
         createDownloadFolder();
         try {
             setupDriver();
@@ -108,7 +112,7 @@ public class SaveSoupApp {
                     System.out.println(String.format("Retrying to load page %s", pageAddress));
                 } catch (NoSuchElementException e2) {
                     isLoaded = true;
-                    currentPageAdress = pageAddress;
+                    currentPageAddress = pageAddress;
                     lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
                     Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
                     driver.findElement(By.cssSelector("#avatarcontainer"));
@@ -126,7 +130,7 @@ public class SaveSoupApp {
         } catch (NoSuchElementException ex) {
             System.out.println(driver.getCurrentUrl());
             System.out.println(driver.getPageSource());
-            System.out.println(String.format("Finished downloading. Last loaded page was %s", currentPageAdress));
+            System.out.println(String.format("Finished downloading. Last loaded page was %s", currentPageAddress));
             isFinished = true;
         }
     }
