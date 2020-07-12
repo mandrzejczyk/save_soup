@@ -143,6 +143,7 @@ public class SaveSoupApp {
         if (downloadImages) {
             try {
                 String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer .lightbox")).getAttribute("href");
+                downloadPath = downloadPath.replaceAll("_\\d{3}\\.", ".");
                 downloadFile(downloadPath);
                 saveDescription(element);
                 return true;
@@ -150,6 +151,7 @@ public class SaveSoupApp {
             }
             try {
                 String downloadPath = element.findElement(By.cssSelector(".content .imagecontainer img")).getAttribute("src");
+                downloadPath = downloadPath.replaceAll("_\\d{3}\\.", ".");
                 downloadFile(downloadPath);
                 saveDescription(element);
                 return true;
