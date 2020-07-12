@@ -31,7 +31,32 @@ public class SaveSoupApp {
     private static String currentPageAdress;
 
     public static void main(String[] args) {
+        System.out.println(String.format("OPERATION SAVE %s IN PROGRESS!", soupPath));
+        setArguments(args);
+        if (!downloadImages && !downloadVideos) isFinished = true;
+        createDownloadFolder();
+        try {
+            setupDriver();
+            loadPage(soupPath);
+            while (!isFinished) {
+                List<WebElement> posts = driver.findElements(By.cssSelector(".post"));
+                for (WebElement element : posts) {
+                    if (downloadImage(element)) continue;
+                    downloadVideo(element);
+                }
+                loadNextPage();
+            }
+        } catch (Exception e) {
+            System.out.println("Error occurred when downloading your content.");
+            System.out.println(String.format("See lastPage.txt in %s for link to resume your download.", lastPagePath));
+            System.out.println("Remember to set proper file number to avoid overriding your existing files.");
+            driver.quit();
+            throw new RuntimeException(e);
+        }
+        driver.quit();
+    }
 
+    private static void setArguments(String[] args) {
         try {
             soupPath = args[0];
             downloadFolder = String.format("%s\\%s", System.getProperty("user.dir"), args[1]);
@@ -43,33 +68,6 @@ public class SaveSoupApp {
             System.out.println("Please set all 6 parameters.");
             throw new RuntimeException(e);
         }
-
-        if (!downloadImages && !downloadVideos) isFinished = true;
-
-        System.out.println(String.format("OPERATION SAVE %s IN PROGRESS!", soupPath));
-        createDownloadFolder();
-
-        try {
-            setupDriver();
-            loadPage(soupPath);
-
-            while (!isFinished) {
-                List<WebElement> posts = driver.findElements(By.cssSelector(".post"));
-                for (WebElement element : posts) {
-                    if (downloadImage(element)) continue;
-                    downloadVideo(element);
-                }
-                loadNextPage();
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error occurred when downloading your content.");
-            System.out.println(String.format("See lastPage.txt in %s for link to resume your download.", lastPagePath));
-            System.out.println("Remember to set proper file number to avoid overriding your existing files.");
-            driver.quit();
-            throw new RuntimeException(e);
-        }
-        driver.quit();
     }
 
     private static void setupDriver() throws IOException {
@@ -127,7 +125,6 @@ public class SaveSoupApp {
             loadPage(nextPage);
         } catch (NoSuchElementException ex) {
             System.out.println(driver.getCurrentUrl());
-
             System.out.println(driver.getPageSource());
             System.out.println(String.format("Finished downloading. Last loaded page was %s", currentPageAdress));
             isFinished = true;
@@ -195,11 +192,9 @@ public class SaveSoupApp {
         Matcher m = p.matcher(downloadPath);
         m.find();
         String fileSuffix = m.group();
-
         fileNumber = String.format(
                 "%0" + fileNumber.length() + "d",
                 Integer.parseInt(fileNumber) + 1);
-
         return String.format("%s.%s", fileNumber, fileSuffix);
     }
 
