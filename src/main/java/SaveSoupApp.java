@@ -47,8 +47,13 @@ public class SaveSoupApp {
             while (!isFinished) {
                 List<WebElement> posts = driver.findElements(By.cssSelector(".post"));
                 for (WebElement element : posts) {
-                    if (downloadImage(element)) continue;
-                    downloadVideo(element);
+                    try {
+                        //Filter out sponsored content
+                        element.findElement(By.cssSelector(".ad-marker"));
+                    } catch (NoSuchElementException ignore) {
+                        if (downloadImage(element)) continue;
+                        downloadVideo(element);
+                    }
                 }
                 loadNextPage();
             }
