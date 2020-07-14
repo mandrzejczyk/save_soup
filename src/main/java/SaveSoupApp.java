@@ -31,6 +31,7 @@ public class SaveSoupApp {
     private static String lastPagePath;
     private static boolean saveDescription;
     private static String currentPageAddress;
+    private static String fileSeparator = File.separator;
 
     public static void main(String[] args) {
         System.out.println(String.format("OPERATION SAVE %s IN PROGRESS!", soupPath));
@@ -70,7 +71,7 @@ public class SaveSoupApp {
     private static void setArguments(String[] args) {
         try {
             soupPath = args[0];
-            downloadFolder = String.format("%s\\%s", System.getProperty("user.dir"), args[1]);
+            downloadFolder = String.format("%s%s%s", System.getProperty("user.dir"), fileSeparator, args[1]);
             fileNumber = args[2];
             downloadImages = Boolean.parseBoolean(args[3]);
             downloadVideos = Boolean.parseBoolean(args[4]);
@@ -125,7 +126,7 @@ public class SaveSoupApp {
     }
 
     private static void saveCurrentPageAddress(String pageAddress) throws IOException {
-        lastPagePath = String.format("%s\\lastPage.txt", downloadFolder);
+        lastPagePath = String.format("%s%slastPage.txt", downloadFolder, fileSeparator);
         Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
     }
 
@@ -221,7 +222,7 @@ public class SaveSoupApp {
             try {
                 WebElement description = element.findElement(By.cssSelector(".description"));
                 Files.write(
-                        Paths.get(String.format("%s\\%s.txt", downloadFolder, fileNumber)),
+                        Paths.get(String.format("%s%s%s.txt", downloadFolder, fileSeparator, fileNumber)),
                         description.getText().getBytes());
             } catch (NoSuchElementException ignore) {
             }
@@ -230,7 +231,7 @@ public class SaveSoupApp {
 
     private static void downloadFile(String downloadPath) {
         try (InputStream in = new URL(downloadPath).openStream()) {
-            Files.copy(in, Paths.get(String.format("%s\\%s", downloadFolder, getFileName(downloadPath))));
+            Files.copy(in, Paths.get(String.format("%s%s%s", downloadFolder, fileSeparator, getFileName(downloadPath))));
         } catch (IOException e) {
             System.out.println(String.format("Failed to download file %s", downloadPath));
         }
@@ -250,7 +251,7 @@ public class SaveSoupApp {
     public static class ResourceExtractor {
         public String getByName(String name) throws IOException {
             URL inputUrl = getClass().getResource("/" + name);
-            File dest = new File(String.format("%s\\%s", System.getProperty("user.dir"), name));
+            File dest = new File(String.format("%s%s%s", System.getProperty("user.dir"), fileSeparator, name));
             if (!dest.exists()) FileUtils.copyURLToFile(inputUrl, dest);
             return dest.getAbsolutePath();
         }
