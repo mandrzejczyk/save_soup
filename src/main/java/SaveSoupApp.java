@@ -32,6 +32,7 @@ public class SaveSoupApp {
     private static boolean saveDescription;
     private static String currentPageAddress;
     private static String fileSeparator = File.separator;
+    private static int attempt;
 
     public static void main(String[] args) {
         System.out.println(String.format("OPERATION SAVE %s IN PROGRESS!", soupPath));
@@ -96,12 +97,12 @@ public class SaveSoupApp {
 
     private static void loadPage(String pageAddress) throws IOException, InterruptedException {
         boolean isLoaded = false;
-        int retry = 0;
+        attempt = 1;
         currentPageAddress = pageAddress;
         saveCurrentPageAddress(pageAddress);
         while (!isLoaded) {
             driver.get(pageAddress);
-            if(!driver.getTitle().equals("Don't panic")) {
+            if (!driver.getTitle().equals("Don't panic")) {
                 try {
                     checkError503Page(pageAddress);
                 } catch (NoSuchElementException e1) {
@@ -119,12 +120,12 @@ public class SaveSoupApp {
             } else {
                 dontPanicErrorPage(pageAddress);
             }
-            retry++;
-            if (retry == 5) {
+            attempt++;
+            if (attempt == 50) {
                 System.out.println(driver.getCurrentUrl());
                 System.out.println(driver.getTitle());
                 System.out.println(driver.getPageSource());
-                throw new RuntimeException(String.format("Failed to load page %s after 5 attempts", pageAddress));
+                throw new RuntimeException(String.format("Failed to load page %s after 50 attempts", pageAddress));
             }
         }
     }
@@ -136,24 +137,27 @@ public class SaveSoupApp {
 
     private static void dontPanicErrorPage(String pageAddress) throws InterruptedException {
         System.out.println("Don't panic error page");
-        System.out.println("Waiting for 20s");
-        Thread.sleep(20000);
+        int waitTime = attempt * 30 * 1000;
+        System.out.println(String.format("Waiting for %s s", waitTime));
+        Thread.sleep(waitTime);
         System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
     private static void checkError503Page(String pageAddress) throws InterruptedException {
         driver.findElement(By.xpath("//*[.='503 – Hang on a second']"));
         System.out.println("Error 503");
-        System.out.println("Waiting for 20s");
-        Thread.sleep(20000);
+        int waitTime = attempt * 30 * 1000;
+        System.out.println(String.format("Waiting for %s s", waitTime));
+        Thread.sleep(waitTime);
         System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
     private static void checkError429Page(String pageAddress) throws InterruptedException {
         driver.findElement(By.xpath("//*[.='429 Too Many Requests']"));
         System.out.println("Error 429");
-        System.out.println("Waiting for 20s");
-        Thread.sleep(20000);
+        int waitTime = attempt * 30 * 1000;
+        System.out.println(String.format("Waiting for %s s", waitTime));
+        Thread.sleep(waitTime);
         System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
