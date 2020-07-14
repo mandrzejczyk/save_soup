@@ -101,19 +101,23 @@ public class SaveSoupApp {
         saveCurrentPageAddress(pageAddress);
         while (!isLoaded) {
             driver.get(pageAddress);
-            try {
-                checkError503Page(pageAddress);
-            } catch (NoSuchElementException e1) {
+            if(!driver.getTitle().equals("Don't panic")) {
                 try {
-                    checkError429Page(pageAddress);
-                } catch (NoSuchElementException e2) {
+                    checkError503Page(pageAddress);
+                } catch (NoSuchElementException e1) {
                     try {
-                        checkSoupPage(pageAddress);
-                        isLoaded = true;
-                    } catch (NoSuchElementException ignore) {
-                        checkNSWFsoup();
+                        checkError429Page(pageAddress);
+                    } catch (NoSuchElementException e2) {
+                        try {
+                            checkSoupPage(pageAddress);
+                            isLoaded = true;
+                        } catch (NoSuchElementException ignore) {
+                            checkNSWFsoup();
+                        }
                     }
                 }
+            } else {
+                dontPanicErrorPage(pageAddress);
             }
             retry++;
             if (retry == 5) {
@@ -128,6 +132,13 @@ public class SaveSoupApp {
     private static void saveCurrentPageAddress(String pageAddress) throws IOException {
         lastPagePath = String.format("%s%slastPage.txt", downloadFolder, fileSeparator);
         Files.write(Paths.get(lastPagePath), pageAddress.getBytes());
+    }
+
+    private static void dontPanicErrorPage(String pageAddress) throws InterruptedException {
+        System.out.println("Don't panic error page");
+        System.out.println("Waiting for 20s");
+        Thread.sleep(20000);
+        System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
     private static void checkError503Page(String pageAddress) throws InterruptedException {

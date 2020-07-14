@@ -1,8 +1,8 @@
 # Save Soup by Angusiasty ![N|Solid](https://i.imgur.com/Wha8o59.jpg)
 
-Save Soup is Windows console app for saving soup.io content.
+Save Soup is console app for saving soup.io content.
 
-#### Now supports NSFW soups 😎
+#### Should work on all operating systems 😎
 
 To run the app you will need:
   - [Java 1.8+](https://www.java.com/en/download/)
