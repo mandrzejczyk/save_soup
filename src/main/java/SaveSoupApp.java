@@ -32,7 +32,6 @@ public class SaveSoupApp {
     private static boolean saveDescription;
     private static String currentPageAddress;
     private static String fileSeparator = File.separator;
-    private static int attempt;
 
     public static void main(String[] args) {
         System.out.println(String.format("OPERATION SAVE %s IN PROGRESS!", soupPath));
@@ -97,7 +96,7 @@ public class SaveSoupApp {
 
     private static void loadPage(String pageAddress) throws IOException, InterruptedException {
         boolean isLoaded = false;
-        attempt = 1;
+        int attempt = 1;
         currentPageAddress = pageAddress;
         saveCurrentPageAddress(pageAddress);
         while (!isLoaded) {
@@ -121,7 +120,7 @@ public class SaveSoupApp {
                 dontPanicErrorPage(pageAddress);
             }
             attempt++;
-            if (attempt == 50) {
+            if (attempt == 100) {
                 System.out.println(driver.getCurrentUrl());
                 System.out.println(driver.getTitle());
                 System.out.println(driver.getPageSource());
@@ -137,27 +136,24 @@ public class SaveSoupApp {
 
     private static void dontPanicErrorPage(String pageAddress) throws InterruptedException {
         System.out.println("Don't panic error page");
-        int waitTime = attempt * 30 * 1000;
-        System.out.println(String.format("Waiting for %s s", waitTime));
-        Thread.sleep(waitTime);
+        System.out.println("Waiting for 30s");
+        Thread.sleep(30 * 1000);
         System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
     private static void checkError503Page(String pageAddress) throws InterruptedException {
         driver.findElement(By.xpath("//*[.='503 – Hang on a second']"));
         System.out.println("Error 503");
-        int waitTime = attempt * 30 * 1000;
-        System.out.println(String.format("Waiting for %s s", waitTime));
-        Thread.sleep(waitTime);
+        System.out.println("Waiting for 30s");
+        Thread.sleep(30 * 1000);
         System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
     private static void checkError429Page(String pageAddress) throws InterruptedException {
         driver.findElement(By.xpath("//*[.='429 Too Many Requests']"));
         System.out.println("Error 429");
-        int waitTime = attempt * 30 * 1000;
-        System.out.println(String.format("Waiting for %s s", waitTime));
-        Thread.sleep(waitTime);
+        System.out.println("Waiting for 30s");
+        Thread.sleep(30 * 1000);
         System.out.println(String.format("Retrying to load page %s", pageAddress));
     }
 
